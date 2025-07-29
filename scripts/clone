@@ -1,0 +1,46 @@
+#!/usr/bin/env node
+
+console.log(`
+Welcome to the Clone CLI!
+
+This tool is designed to help you clone repositories easily.
+
+It will read all the repositories from 'repos/.repos.txt' and clone them into the 'repos' directory.
+`)
+
+const fs = require('fs');
+const path = require('path');
+const { execSync } = require('child_process');
+const reposDir = path.join(__dirname, '../repos');
+const reposFilePath = path.join(reposDir, '.repos.txt');
+
+if (!fs.existsSync(reposDir)) {
+  fs.mkdirSync(reposDir, { recursive: true });
+}
+
+if (!fs.existsSync(reposFilePath)) {
+  console.error(`Error: The file ${reposFilePath} does not exist.`);
+  process.exit(1);
+}
+
+const repos = fs.readFileSync(reposFilePath, 'utf-8').split('\n').filter(line => line.trim() !== '');
+
+repos.forEach(repo => {
+  const repoUrl = repo.trim();
+  if (repoUrl) {
+    const repoName = path.basename(repoUrl + '.git');
+    const repoPath = path.join(reposDir, repoName);
+
+    if (fs.existsSync(repoPath)) {
+      console.log(`Repository ${repoName} already exists. Skipping clone.`);
+    } else {
+      console.log(`Cloning ${repoUrl} into ${repoPath}...`);
+      try {
+        execSync(`git clone ${repoUrl} ${repoPath}`, { stdio: 'inherit' });
+        console.log(`Successfully cloned ${repoName}.`);
+      } catch (error) {
+        console.error(`Failed to clone ${repoName}:`, error.message);
+      }
+    }
+  }
+});
