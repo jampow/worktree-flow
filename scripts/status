@@ -1,0 +1,120 @@
+#!/usr/bin/env node
+const { execSync } = require('child_process')
+const fs = require('fs');
+const path = require('path');
+const { tasksDir } = require('./utils/constants')
+const listTasks = require('./utils/listTasks');
+const { select } = require('@inquirer/prompts');
+
+const askForTask = async () => {
+  const tasks = listTasks();
+  if (tasks.length === 0) {
+    console.log('No tasks found in the tasks directory.');
+    return null;
+  }
+
+  const task = await select({
+    message: 'Select a task to perform:',
+    choices: tasks.map(task => ({ name: task, value: task })),
+    validate: (input) => input ? true : 'You must select a task.'
+  });
+
+  return { task };
+}
+
+const collectStatusFromRepos = ({ task }) => {
+  const taskDir = path.join(tasksDir, task);
+  if (!fs.existsSync(taskDir)) {
+    console.error(`Error: The task directory ${taskDir} does not exist.`);
+    return;
+  }
+
+  const repos = fs.readdirSync(taskDir, 'utf-8');
+  return { task, repos };
+}
+
+const askForCompleteOrSimplifiedStaus = async (data) => {
+  const simplified = await select({
+    message: 'Do you want a complete or simplified status?',
+    choices: [
+      { name: 'Simplified Status', value: 'simplified' },
+      { name: 'Complete Status', value: 'complete' }
+    ],
+    validate: (input) => input ? true : 'You must select an option.'
+  });
+
+  return { ...data, simplified: simplified === 'simplified' };
+}
+
+const reposGitStatus = ({ repos, task, simplified }) => {
+  const status = repos.map(repo => {
+    const repoPath = path.join(tasksDir, task, repo);
+    if (!fs.existsSync(repoPath)) {
+      return { repo, status: 'not found' };
+    }
+    try {
+      const gitStatusCommand = simplified ? 'git status --porcelain' : 'git status';
+      const gitStatus = execSync(gitStatusCommand, { cwd: repoPath }).toString();
+      return { repo, status: gitStatus };
+    } catch (error) {
+      return { repo, status: 'error' };
+    }
+  });
+  return { simplified, task, repos, status };
+}
+
+const printSimplifiedResult = (status) => {
+  const groupedStatus = status.split('\n').reduce((acc, line) => {
+    if (line.trim()) {
+      const [statusCode, fileName] = line.trim().split(' ');
+      if (!acc[statusCode]) {
+        acc[statusCode] = [];
+      }
+      acc[statusCode].push(fileName);
+    }
+    return acc;
+  }, {})
+
+  return Object.entries(groupedStatus).map(([statusCode, files]) => {
+    return `${statusCode}: ${files.length}`;
+  }).join(' ');
+}
+
+const biggestNameLength = (repos) => {
+  return repos.reduce((max, repo) => {
+    const nameLength = repo.length;
+    return nameLength > max ? nameLength : max;
+  }, 0);
+}
+
+const printResult = ({ simplified, task, repos, status }) => {
+  console.log(`Task: ${task}`);
+  console.log(`Status Type: ${simplified ? 'Simplified' : 'Complete'}`);
+  console.log('Repository Status:');
+
+  const maxNameLength = biggestNameLength(repos);
+
+  status.forEach(({ repo, status }) => {
+
+    if (simplified) {
+      const spaces = ' '.repeat(maxNameLength - repo.length);
+      console.log(`- ${repo}:${spaces}  ${printSimplifiedResult(status)}`);
+      return
+    }
+
+    console.log(`- ${repo}:`);
+    if (status === 'not found') {
+      console.log('  Repository not found.');
+    } else if (status === 'error') {
+      console.log('  Error retrieving status.');
+    } else {
+      console.log(`  ${status}`);
+    }
+  });
+}
+
+askForTask()
+  .then(collectStatusFromRepos)
+  .then(askForCompleteOrSimplifiedStaus)
+  .then(reposGitStatus)
+  .then(printResult)

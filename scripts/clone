@@ -36,7 +36,7 @@ repos.forEach(repo => {
     } else {
       console.log(`Cloning ${repoUrl} into ${repoPath}...`);
       try {
-        execSync(`git clone ${repoUrl} ${repoPath}`, { stdio: 'inherit' });
+        execSync(`git clone --bare ${repoUrl} ${repoPath}`, { stdio: 'inherit' });
         console.log(`Successfully cloned ${repoName}.`);
       } catch (error) {
         console.error(`Failed to clone ${repoName}:`, error.message);

@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "clone": "scripts/clone"
+    "status": "scripts/status",
+    "clone": "scripts/clone",
+    "checkout": "scripts/checkout"
   },
   "keywords": [],
   "author": "",
