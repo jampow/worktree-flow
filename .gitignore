@@ -1,2 +1,3 @@
 tasks/*
 repos/*.git
+node_modules
