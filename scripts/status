@@ -75,7 +75,11 @@ const printSimplifiedResult = (status) => {
     return acc;
   }, {})
 
-  return Object.entries(groupedStatus).map(([statusCode, files]) => {
+  const entries = Object.entries(groupedStatus)
+  if (entries.length === 0) {
+    return '✔️';
+  }
+  return entries.map(([statusCode, files]) => {
     return `${statusCode}: ${files.length}`;
   }).join(' ');
 }
