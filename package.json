@@ -2,10 +2,15 @@
   "name": "worktree",
   "version": "1.0.0",
   "main": "index.js",
+  "bin": {
+    "wt": "bin/worktree.js"
+  },
   "scripts": {
     "status": "scripts/status",
     "clone": "scripts/clone",
-    "checkout": "scripts/checkout"
+    "checkout": "scripts/checkout",
+    "test": "vitest run",
+    "test:watch": "vitest run --watch"
   },
   "keywords": [],
   "author": "",
@@ -13,5 +18,8 @@
   "description": "",
   "dependencies": {
     "@inquirer/prompts": "^7.8.0"
+  },
+  "devDependencies": {
+    "vitest": "^3.2.4"
   }
 }
