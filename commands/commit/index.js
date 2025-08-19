@@ -4,8 +4,8 @@ const commit = require('./commit');
 
 module.exports = function(argv, context) {
   const definitions = [
-    { name: 'all', alias: 'a', type: Boolean },
-    { name: 'help', alias: 'h', type: Boolean },
+    { name: 'all', alias: 'a', type: Boolean, description: 'Commit all changes' },
+    { name: 'help', alias: 'h', type: Boolean, description: 'Show this help message' },
   ];
 
   let options;
@@ -17,7 +17,7 @@ module.exports = function(argv, context) {
   }
 
   if (options.help) {
-    help();
+    help(definitions);
     return;
   }
 
