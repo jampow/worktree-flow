@@ -2,7 +2,9 @@ const { getCurrentBranch, getDefaultBranch } = require('./git');
 const { getTaskNumber, getSubTaskNumber } = require('./task');
 const getProjectName = require('./projectName');
 
-const getContext = async (executionFolder) => {
+const getContext = async () => {
+  const executionFolder = process.cwd()
+
   const currentBranch = await getCurrentBranch();
   const defaultBranch = await getDefaultBranch();
 
