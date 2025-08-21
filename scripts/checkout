@@ -172,8 +172,10 @@ const installDependencies = (variables) => {
     }
 
     try {
-      execSync(`${runner} run prepare`, { cwd: taskPath, stdio: 'inherit' })
-      console.log(`Hooks installed.`)
+      if (fs.existsSync(path.join(taskPath, '.husky'))) {
+        execSync(`${runner} run prepare`, { cwd: taskPath, stdio: 'inherit' })
+        console.log(`Hooks installed.`)
+      }
     } catch (error) {
       console.error(`Failed to install hooks for ${repo}:`, error.message)
     }
