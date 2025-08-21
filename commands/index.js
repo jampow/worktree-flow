@@ -1,5 +1,6 @@
 const commands = {
   "commit": require('./commit'),
+  "tag": require('./tagDeploy'),
 }
 
 module.exports = {

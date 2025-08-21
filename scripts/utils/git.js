@@ -12,9 +12,13 @@ const getCurrentBranch = () => {
   });
 }
 
-const getDefaultBranch = () => {
+const getDefaultBranch = (gitDir = null) => {
+  let gitDirParam = '';
+  if (gitDir) {
+    gitDirParam = `--git-dir=${gitDir} `;
+  }
   return new Promise((resolve, reject) => {
-    exec('git branch --list main master', (error, stdout, stderr) => {
+    exec(`git ${gitDirParam}branch --list main master`, (error, stdout, stderr) => {
       if (error) {
         reject(`Error getting default branch: ${stderr}`);
       } else {

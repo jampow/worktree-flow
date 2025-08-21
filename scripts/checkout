@@ -7,6 +7,7 @@ const { checkbox, rawlist, input } = require('@inquirer/prompts')
 const listTasks = require('./utils/listTasks')
 const listGitDirs = require('./utils/listGitDirs')
 const { reposDir, tasksDir } = require('./utils/constants')
+const { getDefaultBranch } = require('./utils/git');
 
 const askForRepo = async () => {
   const gitDirs = listGitDirs()
@@ -79,8 +80,38 @@ const askForNewBranchName = async (data) => {
   return { ...data, branchName, folderName }
 }
 
-const checkoutRepos = ({ repos, branchName, folderName }) => {
-  repos.forEach(repo => {
+const getDefaultBranches = async (variables) => {
+  const { repos, folderName, branchName } = variables
+  const defaultBranches = await Promise.all(repos.map(async (repo) => {
+    const repoPath = path.join(reposDir, `${repo}.git`)
+    if (!fs.existsSync(repoPath)) {
+      console.error(`Error: The repository ${repo} does not exist in the repos directory.`)
+      return null
+    }
+    const defaultBranch = await getDefaultBranch(repoPath)
+    if (!defaultBranch) {
+      console.error(`Error: Could not determine the default branch for ${repo}.`)
+      return null
+    }
+    return { repo, defaultBranch }
+  }))
+    .then(branches => branches.filter(branch => branch !== null))
+    .catch(error => {
+      console.error('Error fetching default branches:', error.message)
+      return []
+    })
+  if (defaultBranches.length === 0) {
+    console.error('No valid repositories found or no default branches could be determined.')
+    return null
+  }
+  return defaultBranches.reduce((acc, { repo, defaultBranch }) => {
+    acc.defaultBranches[repo] = defaultBranch
+    return acc
+  }, { repos, folderName, defaultBranches: {} })
+}
+
+const checkoutRepos = ({ repos, branchName, folderName, defaultBranches, ...rest }) => {
+  repos.forEach((repo) => {
     const repoPath = path.join(reposDir, `${repo}.git`)
     const taskPath = path.join(tasksDir, folderName, repo)
 
@@ -95,12 +126,52 @@ const checkoutRepos = ({ repos, branchName, folderName }) => {
 
     try {
       console.log(`Checking out ${repo} to ${taskPath} on branch ${branchName}...`)
-      execSync(`git --git-dir=${repoPath} worktree add -b ${branchName} ${taskPath}`, { stdio: 'inherit' })
+      console.log(`Default branch for ${repo} is ${defaultBranches[repo]}.`)
+      execSync(`git --git-dir=${repoPath} fetch origin ${defaultBranches[repo]}`, { stdio: 'inherit' })
+      execSync(`git --git-dir=${repoPath} worktree add -b ${branchName} ${taskPath} ${defaultBranches[repo]}`, { stdio: 'inherit' })
       console.log(`Successfully checked out ${repo} to ${taskPath}.`)
     } catch (error) {
       console.error(`Failed to checkout ${repo}:`, error.message)
     }
+
   })
+  return { repos, folderName, branchName, defaultBranches, ...rest }
+}
+
+const identifyRunner = (gitRepo) => {
+  let runner = 'pnpm'
+  if (
+    fs.existsSync(path.join(gitRepo, 'yarn.lock')) ||
+    fs.existsSync(path.join(gitRepo, 'lib', 'yarn.lock'))
+  ) {
+    runner = 'yarn'
+  }
+  return runner
+}
+
+const installDependencies = (variables) => {
+  const { repos, folderName } = variables
+  repos.forEach((repo) => {
+    const taskPath = path.join(tasksDir, folderName, repo)
+    const runner = identifyRunner(taskPath)
+    console.log(`Installing dependencies for ${repo} at ${taskPath} with ${runner}.`)
+
+    try {
+      execSync(`${runner} install`, { cwd: taskPath, stdio: 'inherit' })
+      console.log(`Dependencies installed for ${repo}.`)
+    } catch (error) {
+      console.error(`Failed to install dependencies for ${repo}:`, error.message)
+    }
+
+    try {
+      execSync(`${runner} run prepare`, { cwd: taskPath, stdio: 'inherit' })
+      console.log(`Hooks installed.`)
+    } catch (error) {
+      console.error(`Failed to install hooks for ${repo}:`, error.message)
+    }
+
+  })
+  return variables
 }
 
 askForRepo()
@@ -111,5 +182,7 @@ askForRepo()
     }
     return data
   })
+  .then(getDefaultBranches)
   .then(checkoutRepos)
+  .then(installDependencies)
 
