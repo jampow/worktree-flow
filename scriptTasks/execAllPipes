@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+## prerequired tools
+# echo 'Theese are the prerequired tools to run this script:'
+# echo 'fx'
+# echo 'jq'
+# echo 'npx'
+# echo 'bat'
+# echo 'git'
+
+
+## update all CustomerPortal* folders
+for folder in CustomerPortal*; do
+  echo '===================================================================================================='
+  echo "Updating $folder"
+
+  cd $folder
+
+  BRANCH=$(git branch --show-current)
+
+  az pipelines run --branch $BRANCH --name $folder
+  echo '----------------------------------------------------------------------------------------------------'
+done
+

@@ -135,7 +135,11 @@ const checkoutRepos = ({ repos, branchName, folderName, defaultBranches, ...rest
     try {
       console.log(`Checking out ${repo} to ${taskPath} on branch ${branchName}...`)
       console.log(`Default branch for ${repo} is ${defaultBranches[repo]}.`)
+      // Download the latest changes from the remote repository
       execSync(`git --git-dir=${repoPath} fetch origin ${defaultBranches[repo]}`, { stdio: 'inherit' })
+      // Update the local repository to the latest commit on the default branch
+      // execSync(`git --git-dir=${repoPath} symbolic-ref HEAD refs/heads/${defaultBranches[repo]}`, { stdio: 'inherit' })
+      // Create a worktree with the specified branch name
       execSync(`git --git-dir=${repoPath} worktree add -b ${branchName} ${taskPath} ${defaultBranches[repo]}`, { stdio: 'inherit' })
       console.log(`Successfully checked out ${repo} to ${taskPath}.`)
     } catch (error) {
@@ -173,7 +177,7 @@ const installDependencies = (variables) => {
 
     try {
       if (fs.existsSync(path.join(taskPath, '.husky'))) {
-        execSync(`${runner} run prepare`, { cwd: taskPath, stdio: 'inherit' })
+        execSync(`npx husky install`, { cwd: taskPath, stdio: 'inherit' })
         console.log(`Hooks installed.`)
       }
     } catch (error) {
