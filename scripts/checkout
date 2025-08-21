@@ -81,7 +81,8 @@ const askForNewBranchName = async (data) => {
 }
 
 const getDefaultBranches = async (variables) => {
-  const { repos, folderName, branchName } = variables
+  const { repos } = variables
+
   const defaultBranches = await Promise.all(repos.map(async (repo) => {
     const repoPath = path.join(reposDir, `${repo}.git`)
     if (!fs.existsSync(repoPath)) {
@@ -100,14 +101,21 @@ const getDefaultBranches = async (variables) => {
       console.error('Error fetching default branches:', error.message)
       return []
     })
+
   if (defaultBranches.length === 0) {
     console.error('No valid repositories found or no default branches could be determined.')
     return null
   }
-  return defaultBranches.reduce((acc, { repo, defaultBranch }) => {
-    acc.defaultBranches[repo] = defaultBranch
+
+  const defaultBranchesDict = defaultBranches.reduce((acc, { repo, defaultBranch }) => {
+    acc[repo] = defaultBranch
     return acc
-  }, { repos, folderName, defaultBranches: {} })
+  }, {})
+
+  return {
+    ...variables,
+    defaultBranches: defaultBranchesDict
+  }
 }
 
 const checkoutRepos = ({ repos, branchName, folderName, defaultBranches, ...rest }) => {
