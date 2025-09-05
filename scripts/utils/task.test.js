@@ -5,12 +5,12 @@ import { getTaskNumber, getSubTaskNumber } from './task';
 describe('getTaskNumber', () => {
   describe('fromPath', () => {
     test('should return the task number when inside a task folder', () => {
-      const path = '/home/gianpaulo/Projects/Ticket/worktree/tasks/fix.265103.000000-css-rules-override/delaunay-ui';
+      const path = '/home/gianpaulo/Projects/worktree/tasks/fix.265103.000000-css-rules-override/delaunay-ui';
       expect(getTaskNumber.fromPath(path)).toBe('265103');
     })
 
     test('should return null when outsice a task folder', () => {
-      const path = '/home/gianpaulo/Projects/Ticket/worktree/tasks';
+      const path = '/home/gianpaulo/Projects/worktree/tasks';
       expect(getTaskNumber.fromPath(path)).toBe(null);
     })
   })
@@ -31,17 +31,17 @@ describe('getTaskNumber', () => {
 describe('getSubTaskNumber', () => {
   describe('fromPath', () => {
     test('should return the sub task number when inside a task folder', () => {
-      const path = '/home/gianpaulo/Projects/Ticket/worktree/tasks/fix.265103.234879-css-rules-override/delaunay-ui';
+      const path = '/home/gianpaulo/Projects/worktree/tasks/fix.265103.234879-css-rules-override/delaunay-ui';
       expect(getSubTaskNumber.fromPath(path)).toBe('234879');
     })
 
     test('should return null when a subtask is just zeros', () => {
-      const path = '/home/gianpaulo/Projects/Ticket/worktree/tasks/fix.265103.000000-css-rules-override/delaunay-ui';
+      const path = '/home/gianpaulo/Projects/worktree/tasks/fix.265103.000000-css-rules-override/delaunay-ui';
       expect(getSubTaskNumber.fromPath(path)).toBe(null);
     })
 
     test('should return null when outsice a task folder', () => {
-      const path = '/home/gianpaulo/Projects/Ticket/worktree/tasks';
+      const path = '/home/gianpaulo/Projects/worktree/tasks';
       expect(getSubTaskNumber.fromPath(path)).toBe(null);
     })
   })
