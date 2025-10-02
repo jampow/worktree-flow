@@ -9,6 +9,7 @@
     "status": "scripts/status",
     "clone": "scripts/clone",
     "checkout": "scripts/checkout",
+    "find-deps": "scripts/find-dependencies",
     "test": "vitest run",
     "test:watch": "vitest run --watch"
   },

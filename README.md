@@ -81,4 +81,4 @@ Alguns scripts são acionados pelo npm, outros pelo cli wt. A intenção é migr
 
 ### Comandos wt
 - `wt commit`: Commita as alterações já adicionando o padrão de números de task na mensagem do commit.
-
+- `wt tag`: Cria uma tag em todos os repositórios com o número da versão presente no package.json

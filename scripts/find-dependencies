@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+# get the list of all passed params
+params=$@
+
+# for each folder inside the current directory
+for dir in $INIT_CWD/* ; do
+  echo "Checking in $dir"
+  # if the folder not contains a package.json file
+  # skip it
+  if [[ ! -f "$dir/package.json" && ! -f "$dir/lib/package.json" ]]; then
+    continue
+  fi
+
+  if [ -f "$dir/package.json" ]; then
+    cd "$dir" || exit
+  fi
+
+  if [ -f "$dir/lib/package.json" ]; then
+    cd "$dir/lib" || exit
+  fi
+
+  npm ls $params
+  cd - || exit
+done
+

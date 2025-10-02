@@ -13,14 +13,15 @@ const askForType = async () => {
   const type = await select({
     message: 'Select the type of change you are committing:',
     choices: [
-      { name: 'feat: A new feature', value: 'feat' },
-      { name: 'fix: A bug fix', value: 'fix' },
+      { name: 'chore: Changes to the build process or auxiliary tools and libraries such as documentation generation', value: 'chore' },
       { name: 'docs: Documentation only changes', value: 'docs' },
-      { name: 'style: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)', value: 'style' },
-      { name: 'refactor: A code change that neither fixes a bug nor adds a feature', value: 'refactor' },
+      { name: 'feat: A new feature', value: 'feature' },
+      { name: 'fix: A bug fix', value: 'fix' },
+      { name: 'merge: A merge commit', value: 'merge' },
       { name: 'perf: A code change that improves performance', value: 'perf' },
+      { name: 'refactor: A code change that neither fixes a bug nor adds a feature', value: 'refactor' },
+      { name: 'style: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)', value: 'style' },
       { name: 'test: Adding missing or correcting existing tests', value: 'test' },
-      { name: 'chore: Changes to the build process or auxiliary tools and libraries such as documentation generation', value: 'chore' }
     ]
   });
   return type;
@@ -33,7 +34,7 @@ const askForTaskNumber = async (message) => {
     default: '000000',
     transformer: input => '#' + input.trim().substring(0, 6)
   });
-  return '#' + taskNumber;
+  return taskNumber;
 }
 
 const askForScope = async () => {
@@ -87,11 +88,22 @@ const commitMsgWizard = async (context) => {
   ].join('');
 }
 
+const convertParams = (options) => {
+  let params = '';
+  if (options.all) {
+    params += ' --all';
+  }
+  if (options['no-verify']) {
+    params += ' --no-verify';
+  }
+  return params;
+}
+
 const start = (options, context) => {
   commitMsgWizard(context)
     .then((newCommitMsg) => {
       console.log(`\nCommit message: "${newCommitMsg}"`);
-      const allParam = options && options.all ? ' --all' : '';
+      const allParam = convertParams(options);
       execSync(`git commit${allParam} -m "${newCommitMsg}"`, { stdio: 'inherit' });
     })
     .catch((error) => {

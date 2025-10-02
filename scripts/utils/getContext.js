@@ -14,7 +14,7 @@ const getContext = async () => {
 
   const projectName = getProjectName(executionFolder);
 
-  const packageJson = getPackageJson(executionFolder);
+  // const packageJson = getPackageJson(executionFolder);
 
   return {
     currentBranch,
@@ -23,7 +23,7 @@ const getContext = async () => {
     subTaskNumber,
     executionFolder,
     projectName,
-    packageJson
+    // packageJson
   };
 }
 

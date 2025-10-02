@@ -5,6 +5,7 @@ const commit = require('./commit');
 module.exports = function(argv, context) {
   const definitions = [
     { name: 'all', alias: 'a', type: Boolean, description: 'Commit all changes' },
+    { name: 'no-verify', alias: 'n', type: Boolean, description: 'skip commit hooks' },
     { name: 'help', alias: 'h', type: Boolean, description: 'Show this help message' },
   ];
 
